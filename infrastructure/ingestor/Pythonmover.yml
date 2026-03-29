@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  data_mover:
+    build: .
+    container_name: python_ingestor
+    # Using 'host' mode is fine, but bridge with extra_hosts is often more stable in WSL2
+    networks:
+      - taxi-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ../../Data:/app/Data
+
+networks:
+  taxi-network:
+    external: true

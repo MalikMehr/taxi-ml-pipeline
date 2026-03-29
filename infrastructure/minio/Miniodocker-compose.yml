@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  # This is your Storage Server (The Data Lake)
+  minio:
+    image: minio/minio #An Image is a "read-only snapshot" of a computer.
+    #image: minio/minio tells Docker: "Go to the internet (Docker Hub), find the official 'MinIO' disk, and download it."
+    container_name: minio_storage
+    networks:
+      - taxi-network
+    volumes:
+      # This links your local folder to the container
+      # CHANGE THIS: Move UP two levels to find the project data folder
+      - ../../data:/data 
+    ports:
+      - "9000:9000" # Data Access port 9001:9001, it is written as Host : Container.
+      #9000:9000: This is the API. You won't use this in your browser. This is a "back door" 
+        #for other programs (like Airbyte or Python) to send data to MinIO automatically.
+      - "9001:9001" # Web Interface port (The one you'll use) 
+      #:9001): This is the "door" inside the virtual bubble (the container). The MinIO software is programmed to listen for guests at door 9001.
+      #(9001:): This is the "door" on your Windows computer.
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+    command: server /data --console-address ":9001"
+
+networks:
+  taxi-network:
+    external: true

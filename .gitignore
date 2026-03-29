@@ -1,0 +1,14 @@
+# Ignore the large data storage folders
+infrastructure/minio/data/
+Data/
+
+# Ignore Python and Spark temp files
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+_SUCCESS
+.spark-staged/
+
+# Ignore local environment files
+.env
+.venv/

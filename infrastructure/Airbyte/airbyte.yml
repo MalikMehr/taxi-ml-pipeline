@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Relational database for persistence of metadata, configurations, and job history.
+  airbyte-db:
+    image: airbyte/db:0.50.30
+    container_name: airbyte_db
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_DB=airbyte
+
+  # Workflow orchestration engine responsible for state management and task scheduling.
+  airbyte-temporal:
+    image: airbyte/temporal:0.50.30
+    container_name: airbyte_temporal
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=docker
+      - POSTGRES_PWD=docker
+      - POSTGRES_SEEDS=airbyte-db
+
+  # Core API server managing workspace operations, connector configurations, and job dispatching.
+  airbyte-server:
+    image: airbyte/server:0.50.30
+    container_name: airbyte_server
+    environment:
+      - DATABASE_USER=docker
+      - DATABASE_PASSWORD=docker
+      - DATABASE_URL=jdbc:postgresql://airbyte-db:5432/airbyte
+      - AIRBYTE_VERSION=0.50.30
+      - WORKSPACE_ROOT=/data
+      - WORKSPACE_DOCKER_MOUNT=airbyte_workspace
+    volumes:
+      - airbyte_workspace:/data
+    depends_on:
+      - airbyte-db
+      - airbyte-temporal
+
+  # Front-end user interface providing a graphical dashboard for pipeline monitoring and management.
+  airbyte-webapp:
+    image: airbyte/webapp:0.50.30
+    container_name: airbyte_webapp
+    ports:
+      - "8000:80"
+    depends_on:
+      - airbyte-server
+
+# Persistent volume for local workspace storage and transient job data.
+volumes:
+  airbyte_workspace:
